@@ -2,8 +2,6 @@ import pygame
 import os
 from pygame.locals import *
 import math
-import numpy as np
-import random
 import model3d as model
 
 
@@ -59,7 +57,7 @@ class BaseView():
 class MainFrame(BaseView):
     RESOURCES_DIR = os.path.dirname(__file__) + "\\resources\\"
 
-    COLOURS = [Colours.RED, Colours.GREEN, Colours.GOLD, Colours.BLUE]
+    COLOURS = [Colours.RED, Colours.GREEN, Colours.GOLD, Colours.BLUE, Colours.YELLOW, Colours.DARK_GREY]
 
     def __init__(self, width: int = 800, height: int = 800):
 
@@ -70,9 +68,9 @@ class MainFrame(BaseView):
         self.view_pos = (500, 500, 0)
         self.view_width = 1000
         self.view_height = 1000
-        self.view_depth = 200
+        self.view_depth = 250
         self.object_size_scale = 4
-        self.object_distance_scale = 1000
+        self.object_distance_scale = 400
 
         self.model = None
         self.m2v = None
@@ -97,9 +95,9 @@ class MainFrame(BaseView):
         except Exception as err:
             print(str(err))
 
-        self.model = model.World3D(1000, 1000, 2000)
+        self.model = model.World3D(5000, 5000, 5000)
 
-        self.model.build(1000)
+        self.model.build(10000)
 
         # self.model.print()
 
@@ -107,29 +105,50 @@ class MainFrame(BaseView):
 
     def draw(self):
 
-        # super(MainFrame, self).draw(self)
+        super(MainFrame, self).draw()
 
         self.surface.fill(Colours.BLACK)
         vx, vy, vz = self.view_pos
 
+        # Get the visible objects from the model
         objs = self.m2v.get_object_list(self.view_pos, self.view_width, self.view_height, self.view_depth)
 
+        # Draw visible objects in reverse order by distance
         distance = sorted(list(objs.keys()), reverse=True)
         for d in distance:
             objs_at_d = objs[d]
             for pos, obj in objs_at_d:
                 x, y, z = pos
-                if d > 0:
-                    size = int(obj.size * self.object_size_scale * (1 - d / self.object_distance_scale))
-                    # size = int(obj.size * self.object_size_scale / d)
-                    pygame.draw.rect(self.surface, Colours.rgb_to_greyscale(MainFrame.COLOURS[obj.type]),
-                                     (x - int(size / 2), y - int(size / 2), size, size))
-                    # pygame.draw.rect(self.surface, MainFrame.COLOURS[obj.type], (x, y, 10,10))
-                    # pygame.draw.rect(self.surface, MainFrame.COLOURS[obj.type], (10,10, 10, 10))
 
-                # print("[{0}:{1}".format(pos,obj))
+                size = int(obj.size * self.object_size_scale * (1 - d / self.object_distance_scale))
 
-        pygame.draw.circle(self.surface, Colours.RED, (int(self.view_width / 2), int(self.view_height / 2)), 10, 1)
+                pygame.draw.circle(self.surface,
+                                   MainFrame.COLOURS[obj.type],
+                                   (x, y),
+                                   size)
+
+                pygame.draw.rect(self.surface, Colours.BLACK,
+                                 (int(x - size / 2), int(y - size / 2), size, size), 0)
+
+        # Draw cross hair
+        cross_hair_size = 0.25
+        pygame.draw.circle(self.surface, Colours.WHITE, (int(self.view_width / 2), int(self.view_height / 2)), 10, 1)
+        pygame.draw.rect(self.surface,
+                         Colours.GOLD,
+                         (int(self.view_width / 2 * (1 - cross_hair_size)),
+                          int(self.view_height / 2 * (1 - cross_hair_size)), int(self.view_width * cross_hair_size),
+                          int(self.view_height * cross_hair_size)),
+                         2)
+
+        # Draw current view position
+        msg = "Pos:{0}".format(self.view_pos)
+        text_rect = (0, 0, 100, 30)
+        drawText(surface=self.surface,
+                 text=msg,
+                 color=Colours.GOLD,
+                 rect=text_rect,
+                 font=pygame.font.SysFont(pygame.font.get_default_font(), 12),
+                 bkg=Colours.DARK_GREY)
 
     def tick(self):
 
@@ -178,6 +197,17 @@ def main():
 
     while loop is True:
 
+        keys = pygame.key.get_pressed()
+        if keys[K_LEFT]:
+            view.view_pos = np.add(view.view_pos, np.array(model.World3D.WEST) * 2)
+        elif keys[K_RIGHT]:
+            view.view_pos = np.add(view.view_pos, np.array(model.World3D.EAST) * 2)
+
+        if keys[K_UP]:
+            view.view_pos = np.add(view.view_pos, np.array(model.World3D.DOWN) * 2)
+        elif keys[K_DOWN]:
+            view.view_pos = np.add(view.view_pos, np.array(model.World3D.UP) * 2)
+
         # Loop to process pygame events
         for event in pygame.event.get():
 
@@ -198,18 +228,11 @@ def main():
 
             # Key pressed events
             elif event.type == KEYDOWN:
-                if event.key in (K_UP, K_w):
+                if event.key == K_q:
                     view.view_pos = np.add(view.view_pos, np.array(model.World3D.NORTH))
-                elif event.key in (K_DOWN, K_s):
+                elif event.key == K_e:
                     view.view_pos = np.add(view.view_pos, np.array(model.World3D.SOUTH))
-                elif event.key in (K_LEFT, K_a):
-                    view.view_pos = np.add(view.view_pos, np.array(model.World3D.WEST))
-                elif event.key in (K_RIGHT, K_d):
-                    view.view_pos = np.add(view.view_pos, np.array(model.World3D.EAST))
-                elif event.key in (K_q, K_q):
-                    view.view_pos = np.add(view.view_pos, np.array(model.World3D.UP))
-                elif event.key in (K_e, K_e):
-                    view.view_pos = np.add(view.view_pos, np.array(model.World3D.DOWN))
+
                 print(view.view_pos)
 
 
@@ -247,7 +270,7 @@ class ModelToView3D():
             ow = ox - vx
             oh = oy - vy
 
-            if od < 0 or od > view_depth or abs(ow) > view_width / 2 or abs(oh) > view_height / 2:
+            if od <= 0 or od > view_depth or abs(ow) > view_width / 2 or abs(oh) > view_height / 2:
                 pass
             else:
 
@@ -257,11 +280,57 @@ class ModelToView3D():
 
                 # Add ((x,y,z), obj)) to list of objects at this distance
                 objects[od].append((
-                    ((ow * (1 - od / self.infinity)) + int(view_width / 2),
-                     (oh * (1 - od / self.infinity)) + int(view_height / 2),
+                    (int(ow * (1 - od / self.infinity)) + int(view_width / 2),
+                     int(oh * (1 - od / self.infinity)) + int(view_height / 2),
                      od), obj))
 
         return objects
+
+
+# draw some text into an area of a surface
+# automatically wraps words
+# returns any text that didn't get blitted
+def drawText(surface, text, color, rect, font, aa=False, bkg=None):
+    rect = pygame.Rect(rect)
+    y = rect.top
+    lineSpacing = 2
+
+    # get the height of the font
+    fontHeight = font.size("Tg")[1]
+
+    while text:
+        i = 1
+
+        # determine if the row of text will be outside our area
+        if y + fontHeight > rect.bottom:
+            break
+
+        # determine maximum width of line
+        while font.size(text[:i])[0] < rect.width and i < len(text):
+            i += 1
+
+        # if we've wrapped the text, then adjust the wrap to the last word
+        if i < len(text):
+            i = text.rfind(" ", 0, i) + 1
+
+        # render the line and blit it to the surface
+        if bkg:
+            image = font.render(text[:i], 1, color, bkg)
+            image.set_colorkey(bkg)
+        else:
+            image = font.render(text[:i], aa, color)
+
+        textpos = image.get_rect()
+        textpos.centerx = rect.centerx
+        textpos.y = y
+
+        surface.blit(image, (textpos))
+        y += fontHeight + lineSpacing
+
+        # remove the text we just blitted
+        text = text[i:]
+
+    return text
 
 
 if __name__ == "__main__":
