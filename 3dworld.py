@@ -67,12 +67,12 @@ class MainFrame(BaseView):
 
         self.fill_colour = Colours.WHITE
 
-        self.view_pos = (500,300,0)
-        self.view_width = 500
-        self.view_height = 500
+        self.view_pos = (500,500,0)
+        self.view_width = 1000
+        self.view_height = 1000
         self.view_depth = 100
-        self.object_size_scale = 0.25
-        self.object_distance_scale = 100
+        self.object_size_scale = 5
+        self.object_distance_scale = 200
 
         self.model = None
         self.m2v = None
@@ -112,8 +112,6 @@ class MainFrame(BaseView):
         self.surface.fill(Colours.BLACK)
         vx,vy,vz = self.view_pos
 
-        pygame.draw.circle(self.surface,Colours.RED,(int(self.view_width/2), int(self.view_height/2)),10,1)
-
         objs = self.m2v.get_object_list(self.view_pos, self.view_width, self.view_height, self.view_depth)
 
         distance = sorted(list(objs.keys()),reverse=True)
@@ -122,20 +120,28 @@ class MainFrame(BaseView):
             for pos, obj in objs_at_d:
                 x,y,z = pos
                 if d > 0:
-                    size = int(obj.size*self.object_size_scale/(d/self.object_distance_scale ))
+                    size = int(obj.size * self.object_size_scale * (1 - d/self.object_distance_scale))
+                    #size = int(obj.size * self.object_size_scale / d)
                     pygame.draw.rect(self.surface, Colours.rgb_to_greyscale(MainFrame.COLOURS[obj.type]), (x - int(size/2),y - int(size/2),size,size))
                     #pygame.draw.rect(self.surface, MainFrame.COLOURS[obj.type], (x, y, 10,10))
                     #pygame.draw.rect(self.surface, MainFrame.COLOURS[obj.type], (10,10, 10, 10))
 
                 #print("[{0}:{1}".format(pos,obj))
 
-
+        pygame.draw.circle(self.surface, Colours.RED, (int(self.view_width / 2), int(self.view_height / 2)), 10, 1)
 
     def tick(self):
 
         #self.fill_colour = Colours.scale(self.fill_colour, 0.95)
 
         self.view_pos = np.add(self.view_pos, np.array(model.World3D.NORTH))
+
+        x,y,z = self.view_pos
+
+        if z > self.model.depth:
+            self.view_pos = np.multiply(self.view_pos, np.array([1,1, 0]))
+            print("Going back to z = 0: {0}".format(self.view_pos))
+
 
         return
 
@@ -147,9 +153,19 @@ class MainFrame(BaseView):
 
 
 def main():
+
+    obj_size = 10
+    object_size_scale = 1
+    object_distance_scale = 100
+
+    for d in range(100,0, -1):
+        view_size = int(obj_size * object_size_scale * (1 - (d / object_distance_scale)))
+        print(d, view_size)
+
+
     pygame.init()
 
-    view = MainFrame()
+    view = MainFrame(width=1000, height=1000)
     view.initialise()
 
 
@@ -158,7 +174,7 @@ def main():
 
     FPSCLOCK = pygame.time.Clock()
 
-    pygame.time.set_timer(USEREVENT + 1, 300)
+    pygame.time.set_timer(USEREVENT + 1, 10)
     pygame.time.set_timer(USEREVENT + 2, 500)
     pygame.event.set_allowed([QUIT, KEYUP, USEREVENT])
 
@@ -223,7 +239,7 @@ class ModelToView3D():
     def __init__(self, model):
         self.model= model
 
-        self.infinity = 200
+        self.infinity = 1000
 
     def get_object_list(self, view_pos, view_width, view_height, view_depth, view_heading = model.World3D.NORTH):
         objects = {}
