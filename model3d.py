@@ -43,13 +43,13 @@ class World3D:
                                   random.randint(1, 5),
                                   random.choice(World3D.HEADINGS))
 
-            self.add_object(new_object, random.randint(0, 1000), random.randint(0, 1000),
-                            random.randint(0, 1000))
+            self.add_object(new_object, random.randint(0, self.width), random.randint(0, self.height),
+                            random.randint(0, self.depth))
 
-        for i in range(30,200):
-            new_object = Object3D(1, 1, random.choice(World3D.HEADINGS))
+        for i in range(30,500):
+            new_object = Object3D(1, 15, random.choice(World3D.HEADINGS))
 
-            self.add_object(new_object, 500, 100, i)
+            self.add_object(new_object, 300, 300, i)
 
     def print(self):
         print("Headings {0}".format(World3D.HEADINGS))

@@ -6,6 +6,7 @@ import numpy as np
 import random
 import model3d as model
 
+
 class Colours:
     # set up the colours
     BLACK = (0, 0, 0)
@@ -22,19 +23,19 @@ class Colours:
 
     @staticmethod
     def scale(colour, factor):
-        r,g,b = colour
+        r, g, b = colour
         r = int(r * factor)
         g = int(g * factor)
         b = int(b * factor)
-        return (r,g,b)
+        return (r, g, b)
 
     @staticmethod
     def rgb_to_greyscale(colour):
-        r,g,b = colour
+        r, g, b = colour
 
-        c = min(int(math.sqrt(r*r + g*g + b*b)), 255)
+        c = min(int(math.sqrt(r * r + g * g + b * b)), 255)
 
-        return (c,c,c)
+        return (c, c, c)
 
 
 class BaseView():
@@ -45,7 +46,6 @@ class BaseView():
         self.width = width
         self.surface = None
 
-
     def initialise(self):
         pass
 
@@ -55,8 +55,8 @@ class BaseView():
     def draw(self):
         pass
 
-class MainFrame(BaseView):
 
+class MainFrame(BaseView):
     RESOURCES_DIR = os.path.dirname(__file__) + "\\resources\\"
 
     COLOURS = [Colours.RED, Colours.GREEN, Colours.GOLD, Colours.BLUE]
@@ -67,12 +67,12 @@ class MainFrame(BaseView):
 
         self.fill_colour = Colours.WHITE
 
-        self.view_pos = (500,500,0)
+        self.view_pos = (500, 500, 0)
         self.view_width = 1000
         self.view_height = 1000
-        self.view_depth = 100
-        self.object_size_scale = 5
-        self.object_distance_scale = 200
+        self.view_depth = 200
+        self.object_size_scale = 4
+        self.object_distance_scale = 1000
 
         self.model = None
         self.m2v = None
@@ -81,13 +81,13 @@ class MainFrame(BaseView):
 
         super(MainFrame, self).initialise()
 
-        #pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF | pygame.HWACCEL)
-        #self.surface = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
-        self.surface =  pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF | pygame.HWACCEL)
+        # pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF | pygame.HWACCEL)
+        # self.surface = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
+        self.surface = pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF | pygame.HWACCEL)
 
         os.environ["SDL_VIDEO_CENTERED"] = "1"
         pygame.init()
-        pygame.display.set_caption("Colours")
+        pygame.display.set_caption("3D Space")
         filename = MainFrame.RESOURCES_DIR + "icon.png"
 
         try:
@@ -97,51 +97,51 @@ class MainFrame(BaseView):
         except Exception as err:
             print(str(err))
 
-        self.model = model.World3D(1000,1000,1000)
+        self.model = model.World3D(1000, 1000, 2000)
 
         self.model.build(1000)
 
-        #self.model.print()
+        # self.model.print()
 
         self.m2v = ModelToView3D(self.model)
 
     def draw(self):
 
-        #super(MainFrame, self).draw(self)
+        # super(MainFrame, self).draw(self)
 
         self.surface.fill(Colours.BLACK)
-        vx,vy,vz = self.view_pos
+        vx, vy, vz = self.view_pos
 
         objs = self.m2v.get_object_list(self.view_pos, self.view_width, self.view_height, self.view_depth)
 
-        distance = sorted(list(objs.keys()),reverse=True)
+        distance = sorted(list(objs.keys()), reverse=True)
         for d in distance:
             objs_at_d = objs[d]
             for pos, obj in objs_at_d:
-                x,y,z = pos
+                x, y, z = pos
                 if d > 0:
-                    size = int(obj.size * self.object_size_scale * (1 - d/self.object_distance_scale))
-                    #size = int(obj.size * self.object_size_scale / d)
-                    pygame.draw.rect(self.surface, Colours.rgb_to_greyscale(MainFrame.COLOURS[obj.type]), (x - int(size/2),y - int(size/2),size,size))
-                    #pygame.draw.rect(self.surface, MainFrame.COLOURS[obj.type], (x, y, 10,10))
-                    #pygame.draw.rect(self.surface, MainFrame.COLOURS[obj.type], (10,10, 10, 10))
+                    size = int(obj.size * self.object_size_scale * (1 - d / self.object_distance_scale))
+                    # size = int(obj.size * self.object_size_scale / d)
+                    pygame.draw.rect(self.surface, Colours.rgb_to_greyscale(MainFrame.COLOURS[obj.type]),
+                                     (x - int(size / 2), y - int(size / 2), size, size))
+                    # pygame.draw.rect(self.surface, MainFrame.COLOURS[obj.type], (x, y, 10,10))
+                    # pygame.draw.rect(self.surface, MainFrame.COLOURS[obj.type], (10,10, 10, 10))
 
-                #print("[{0}:{1}".format(pos,obj))
+                # print("[{0}:{1}".format(pos,obj))
 
         pygame.draw.circle(self.surface, Colours.RED, (int(self.view_width / 2), int(self.view_height / 2)), 10, 1)
 
     def tick(self):
 
-        #self.fill_colour = Colours.scale(self.fill_colour, 0.95)
+        # self.fill_colour = Colours.scale(self.fill_colour, 0.95)
 
         self.view_pos = np.add(self.view_pos, np.array(model.World3D.NORTH))
 
-        x,y,z = self.view_pos
+        x, y, z = self.view_pos
 
         if z > self.model.depth:
-            self.view_pos = np.multiply(self.view_pos, np.array([1,1, 0]))
+            self.view_pos = np.multiply(self.view_pos, np.array([1, 1, 0]))
             print("Going back to z = 0: {0}".format(self.view_pos))
-
 
         return
 
@@ -153,22 +153,18 @@ class MainFrame(BaseView):
 
 
 def main():
-
     obj_size = 10
     object_size_scale = 1
     object_distance_scale = 100
 
-    for d in range(100,0, -1):
+    for d in range(100, 0, -1):
         view_size = int(obj_size * object_size_scale * (1 - (d / object_distance_scale)))
         print(d, view_size)
-
 
     pygame.init()
 
     view = MainFrame(width=1000, height=1000)
     view.initialise()
-
-
 
     os.environ["SDL_VIDEO_CENTERED"] = "1"
 
@@ -230,29 +226,28 @@ def main():
 
     view.end()
 
-
     return 0
 
 
 class ModelToView3D():
 
     def __init__(self, model):
-        self.model= model
+        self.model = model
 
         self.infinity = 1000
 
-    def get_object_list(self, view_pos, view_width, view_height, view_depth, view_heading = model.World3D.NORTH):
+    def get_object_list(self, view_pos, view_width, view_height, view_depth, view_heading=model.World3D.NORTH):
         objects = {}
 
-        vx,vy,vz = view_pos
+        vx, vy, vz = view_pos
 
-        for (ox,oy,oz),obj in self.model.objects:
+        for (ox, oy, oz), obj in self.model.objects:
 
             od = oz - vz
             ow = ox - vx
             oh = oy - vy
 
-            if od < 0 or od > view_depth or abs(ow) > view_width/2 or abs(oh) > view_height/2:
+            if od < 0 or od > view_depth or abs(ow) > view_width / 2 or abs(oh) > view_height / 2:
                 pass
             else:
 
