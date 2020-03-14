@@ -3,6 +3,7 @@ import os
 from pygame.locals import *
 import math
 import model3d as model
+import numpy as np
 
 
 class Colours:
@@ -130,25 +131,26 @@ class MainFrame(BaseView):
                 pygame.draw.rect(self.surface, Colours.BLACK,
                                  (int(x - size / 2), int(y - size / 2), size, size), 0)
 
+
         # Draw cross hair
         cross_hair_size = 0.25
         pygame.draw.circle(self.surface, Colours.WHITE, (int(self.view_width / 2), int(self.view_height / 2)), 10, 1)
         pygame.draw.rect(self.surface,
                          Colours.GOLD,
-                         (int(self.view_width / 2 * (1 - cross_hair_size)),
-                          int(self.view_height / 2 * (1 - cross_hair_size)), int(self.view_width * cross_hair_size),
-                          int(self.view_height * cross_hair_size)),
+                         (int(self.view_width/2 * (1-cross_hair_size)), int(self.view_height/2*(1-cross_hair_size)), int(self.view_width*cross_hair_size), int(self.view_height * cross_hair_size)),
                          2)
+
 
         # Draw current view position
         msg = "Pos:{0}".format(self.view_pos)
-        text_rect = (0, 0, 100, 30)
+        text_rect = (0,0,100,30)
         drawText(surface=self.surface,
                  text=msg,
                  color=Colours.GOLD,
-                 rect=text_rect,
+                 rect = text_rect,
                  font=pygame.font.SysFont(pygame.font.get_default_font(), 12),
                  bkg=Colours.DARK_GREY)
+
 
     def tick(self):
 
@@ -189,7 +191,7 @@ def main():
 
     FPSCLOCK = pygame.time.Clock()
 
-    pygame.time.set_timer(USEREVENT + 1, 10)
+    pygame.time.set_timer(USEREVENT + 1, 5)
     pygame.time.set_timer(USEREVENT + 2, 500)
     pygame.event.set_allowed([QUIT, KEYUP, USEREVENT])
 
@@ -335,3 +337,6 @@ def drawText(surface, text, color, rect, font, aa=False, bkg=None):
 
 if __name__ == "__main__":
     main()
+
+
+
