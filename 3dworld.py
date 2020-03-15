@@ -37,6 +37,40 @@ class Colours:
         return (c, c, c)
 
 
+class spritesheet(object):
+    def __init__(self, filename):
+        try:
+            self.sheet = pygame.image.load(filename)
+        except Exception as err:
+            print('Unable to load spritesheet image:', filename)
+            raise err
+
+    # Load a specific image from a specific rectangle
+    def image_at(self, rectangle = None, colorkey = None):
+        if rectangle is None:
+            rectangle = self.sheet.get_rect()
+        "Loads image from x,y,x+offset,y+offset"
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size, depth=24)
+        key = (0, 255, 0)
+        image.fill(key)
+        image.set_colorkey(key)
+        image.blit(self.sheet, (0, 0), rect)
+
+        return image
+
+    # Load a whole bunch of images and return them as a list
+    def images_at(self, rects, colorkey = None):
+        "Loads multiple images, supply a list of coordinates"
+        return [self.image_at(rect, colorkey) for rect in rects]
+
+    # Load a whole strip of images
+    def load_strip(self, rect, image_count, colorkey = None):
+        "Loads a strip of images and returns them as a list"
+        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
+                for x in range(image_count)]
+        return self.images_at(tups, colorkey)
+
 class BaseView():
 
     def __init__(self, width: int = 0, height: int = 0):
@@ -70,11 +104,13 @@ class MainFrame(BaseView):
         self.view_width = width
         self.view_height = height
         self.view_depth = 250
-        self.object_size_scale = 4
+        self.object_size_scale = 10
         self.object_distance_scale = 400
 
         self.model = None
         self.m2v = None
+
+        self.alien_images = []
 
     def initialise(self):
 
@@ -88,15 +124,22 @@ class MainFrame(BaseView):
         pygame.init()
         pygame.display.set_caption("3D Space")
         filename = MainFrame.RESOURCES_DIR + "icon.png"
+        alien_file = MainFrame.RESOURCES_DIR + "aliensprite2.png"
 
         try:
             image = pygame.image.load(filename)
             image = pygame.transform.scale(image, (32, 32))
+
+            image_sheet = spritesheet(alien_file)
+            for x in range(0, 9):
+                original_image = image_sheet.image_at((x * 39,6,39,27))
+                self.alien_images.append((original_image))
+
             pygame.display.set_icon(image)
         except Exception as err:
             print(str(err))
 
-        self.model = model.World3D(5000, 5000, 5000)
+        self.model = model.World3D(5000, 5000, 10)
 
         self.model.build(10000)
 
@@ -123,13 +166,16 @@ class MainFrame(BaseView):
 
                 size = int(obj.size * self.object_size_scale * (1 - d / self.object_distance_scale))
 
-                pygame.draw.circle(self.surface,
-                                   MainFrame.COLOURS[obj.type],
-                                   (x, y),
-                                   size)
+                # pygame.draw.circle(self.surface,
+                #                    MainFrame.COLOURS[obj.type],
+                #                    (x, y),
+                #                    size)
+                #
+                # pygame.draw.rect(self.surface, Colours.BLACK,
+                #                  (int(x - size / 2), int(y - size / 2), size, size), 0)
 
-                pygame.draw.rect(self.surface, Colours.BLACK,
-                                 (int(x - size / 2), int(y - size / 2), size, size), 0)
+                image = pygame.transform.scale(self.alien_images[obj.type], (size, size))
+                self.surface.blit(image, (int(x - size / 2), int(y - size / 2), size, size))
 
         # Draw cross hair
         cross_hair_size = 0.25
@@ -153,7 +199,7 @@ class MainFrame(BaseView):
 
     def tick(self):
 
-        # self.fill_colour = Colours.scale(self.fill_colour, 0.95)
+        return
 
         self.view_pos = np.add(self.view_pos, np.array(model.World3D.NORTH))
 
@@ -201,6 +247,11 @@ def main():
         elif keys[K_DOWN]:
             view.view_pos = np.add(view.view_pos, np.array(model.World3D.UP) * 2)
 
+        if keys[K_q]:
+            view.view_pos = np.add(view.view_pos, np.array(model.World3D.NORTH))
+        elif keys[K_e]:
+            view.view_pos = np.add(view.view_pos, np.array(model.World3D.SOUTH))
+
         # Loop to process pygame events
         for event in pygame.event.get():
 
@@ -215,10 +266,7 @@ def main():
 
             # Key pressed events
             elif event.type == KEYDOWN:
-                if event.key == K_q:
-                    view.view_pos = np.add(view.view_pos, np.array(model.World3D.NORTH))
-                elif event.key == K_e:
-                    view.view_pos = np.add(view.view_pos, np.array(model.World3D.SOUTH))
+                pass
 
                 print(view.view_pos)
 

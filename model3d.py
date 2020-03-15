@@ -50,14 +50,14 @@ class World3D:
         for i in range(30, 100):
             new_object = Object3D(int((i % 10) / 2), 10, random.choice(World3D.HEADINGS))
 
-            self.add_object(new_object, 300, 300, i * z_spacing)
-            self.add_object(new_object, 700, 700, i * z_spacing)
-            self.add_object(new_object, 700, 300, i * z_spacing)
-            self.add_object(new_object, 300, 700, i * z_spacing)
-            self.add_object(new_object, 300, 500, i * z_spacing)
-            self.add_object(new_object, 700, 500, i * z_spacing)
-            self.add_object(new_object, 500, 300, i * z_spacing)
-            self.add_object(new_object, 500, 700, i * z_spacing)
+            self.add_object(new_object, 300 + i * 20, 300, 10)
+            self.add_object(new_object, 700, 700 + i * 20, 10)
+            # self.add_object(new_object, 700, 300, i * z_spacing)
+            # self.add_object(new_object, 300, 700, i * z_spacing)
+            # self.add_object(new_object, 300, 500, i * z_spacing)
+            # self.add_object(new_object, 700, 500, i * z_spacing)
+            # self.add_object(new_object, 500, 300, i * z_spacing)
+            # self.add_object(new_object, 500, 700, i * z_spacing)
 
     def print(self):
         print("Headings {0}".format(World3D.HEADINGS))
