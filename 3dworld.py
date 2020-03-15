@@ -58,7 +58,7 @@ class BaseView():
 class MainFrame(BaseView):
     RESOURCES_DIR = os.path.dirname(__file__) + "\\resources\\"
 
-    COLOURS = [Colours.RED, Colours.GREEN, Colours.GOLD, Colours.BLUE, Colours.YELLOW, Colours.DARK_GREY]
+    COLOURS = [Colours.RED, Colours.GREEN, Colours.GOLD, Colours.BLUE, Colours.YELLOW, Colours.WHITE]
 
     def __init__(self, width: int = 800, height: int = 800):
 
@@ -131,26 +131,25 @@ class MainFrame(BaseView):
                 pygame.draw.rect(self.surface, Colours.BLACK,
                                  (int(x - size / 2), int(y - size / 2), size, size), 0)
 
-
         # Draw cross hair
         cross_hair_size = 0.25
         pygame.draw.circle(self.surface, Colours.WHITE, (int(self.view_width / 2), int(self.view_height / 2)), 10, 1)
         pygame.draw.rect(self.surface,
                          Colours.GOLD,
-                         (int(self.view_width/2 * (1-cross_hair_size)), int(self.view_height/2*(1-cross_hair_size)), int(self.view_width*cross_hair_size), int(self.view_height * cross_hair_size)),
+                         (int(self.view_width / 2 * (1 - cross_hair_size)),
+                          int(self.view_height / 2 * (1 - cross_hair_size)), int(self.view_width * cross_hair_size),
+                          int(self.view_height * cross_hair_size)),
                          2)
-
 
         # Draw current view position
         msg = "Pos:{0}".format(self.view_pos)
-        text_rect = (0,0,100,30)
+        text_rect = (0, 0, 100, 30)
         drawText(surface=self.surface,
                  text=msg,
                  color=Colours.GOLD,
-                 rect = text_rect,
+                 rect=text_rect,
                  font=pygame.font.SysFont(pygame.font.get_default_font(), 12),
                  bkg=Colours.DARK_GREY)
-
 
     def tick(self):
 
@@ -174,14 +173,6 @@ class MainFrame(BaseView):
 
 
 def main():
-    obj_size = 10
-    object_size_scale = 1
-    object_distance_scale = 100
-
-    for d in range(100, 0, -1):
-        view_size = int(obj_size * object_size_scale * (1 - (d / object_distance_scale)))
-        print(d, view_size)
-
     pygame.init()
 
     view = MainFrame(width=600, height=600)
@@ -192,8 +183,8 @@ def main():
     FPSCLOCK = pygame.time.Clock()
 
     pygame.time.set_timer(USEREVENT + 1, 5)
-    pygame.time.set_timer(USEREVENT + 2, 500)
-    pygame.event.set_allowed([QUIT, KEYUP, USEREVENT])
+    #pygame.time.set_timer(USEREVENT + 2, 500)
+    pygame.event.set_allowed([QUIT, KEYUP, KEYDOWN, USEREVENT])
 
     loop = True
 
@@ -218,12 +209,6 @@ def main():
 
                 view.tick()
 
-                try:
-                    pass
-
-                except Exception as err:
-                    print(str(err))
-
             # Process 0.5 second timer events
             elif event.type == USEREVENT + 2:
                 pass
@@ -236,7 +221,6 @@ def main():
                     view.view_pos = np.add(view.view_pos, np.array(model.World3D.SOUTH))
 
                 print(view.view_pos)
-
 
             # QUIT event
             elif event.type == QUIT:
@@ -337,6 +321,3 @@ def drawText(surface, text, color, rect, font, aa=False, bkg=None):
 
 if __name__ == "__main__":
     main()
-
-
-

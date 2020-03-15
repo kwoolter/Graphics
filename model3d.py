@@ -38,7 +38,7 @@ class World3D:
     def build(self, obj_count=500):
 
         for i in range(1, obj_count):
-            new_object = Object3D(random.randint(1, 3),
+            new_object = Object3D(random.randint(0, 5),
                                   random.randint(1, 5),
                                   random.choice(World3D.HEADINGS))
 
@@ -47,7 +47,7 @@ class World3D:
 
         z_spacing = 15
 
-        for i in range(30, 50):
+        for i in range(30, 100):
             new_object = Object3D(int((i % 10) / 2), 10, random.choice(World3D.HEADINGS))
 
             self.add_object(new_object, 300, 300, i * z_spacing)
