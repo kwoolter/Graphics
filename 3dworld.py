@@ -67,8 +67,8 @@ class MainFrame(BaseView):
         self.fill_colour = Colours.WHITE
 
         self.view_pos = (500, 500, 0)
-        self.view_width = 1000
-        self.view_height = 1000
+        self.view_width = width
+        self.view_height = height
         self.view_depth = 250
         self.object_size_scale = 4
         self.object_distance_scale = 400
@@ -184,7 +184,7 @@ def main():
 
     pygame.init()
 
-    view = MainFrame(width=1000, height=1000)
+    view = MainFrame(width=600, height=600)
     view.initialise()
 
     os.environ["SDL_VIDEO_CENTERED"] = "1"
